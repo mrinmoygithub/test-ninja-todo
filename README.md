@@ -63,6 +63,42 @@ Logs:
 - `logs/deploy.log` — callback timestamps and build result
 - `logs/docker-build.log` — full `docker build` output
 
+### Email notifications
+
+After each deploy callback finishes (success or failure), the webhook sends a plain-text email with deploy log lines and a build output excerpt.
+
+1. Copy the template and set your Gmail app password:
+
+   ```bash
+   cp .env.example .env
+   nano .env
+   ```
+
+   Required variables: `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `NOTIFY_EMAIL` (default recipient in the template: sanghrana93@gmail.com).
+
+2. Gmail setup: Google Account → Security → 2-Step Verification → App passwords → create one for Mail.
+
+3. Test SMTP without running a deploy:
+
+   ```bash
+   cd /root/test_ninja
+   python3 deploy/notify_email.py --test
+   ```
+
+4. Test end-to-end (webhook + email):
+
+   ```bash
+   source /etc/todo-deploy/webhook.env
+   curl -fsS -X POST http://127.0.0.1:9876/deploy \
+     -H "Content-Type: application/json" \
+     -H "X-Deploy-Secret: ${DEPLOY_WEBHOOK_SECRET}" \
+     -d '{"ref":"refs/heads/master","sha":"manual-test","repository":"local/test"}'
+   ```
+
+   Check the inbox at `NOTIFY_EMAIL`. After a push to `master`, the **Deploy callback** workflow triggers the same path with the real commit SHA.
+
+If `.env` is missing or incomplete, the webhook still completes; it logs `email notification skipped` to stderr.
+
 ## GitHub repository
 
 1. Create an **empty** repo on GitHub (no README), e.g. `test-ninja-todo`.

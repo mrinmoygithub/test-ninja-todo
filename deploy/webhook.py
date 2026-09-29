@@ -11,7 +11,12 @@ from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+_DEPLOY_DIR = Path(__file__).resolve().parent
+if str(_DEPLOY_DIR) not in sys.path:
+    sys.path.insert(0, str(_DEPLOY_DIR))
+from notify_email import send_deploy_notification
+
+REPO_ROOT = _DEPLOY_DIR.parent
 LOG_DIR = REPO_ROOT / "logs"
 DEPLOY_LOG = LOG_DIR / "deploy.log"
 BUILD_LOG = LOG_DIR / "docker-build.log"
@@ -46,7 +51,8 @@ def run_docker_build() -> tuple[int, str]:
         if proc.stderr:
             f.write(proc.stderr)
     append_line(BUILD_LOG, f"--- build finished exit={proc.returncode} {utc_now()} ---")
-    return proc.returncode, proc.stderr or proc.stdout or ""
+    combined = (proc.stdout or "") + (proc.stderr or "")
+    return proc.returncode, combined
 
 
 class DeployHandler(BaseHTTPRequestHandler):
@@ -87,18 +93,45 @@ class DeployHandler(BaseHTTPRequestHandler):
         sha = payload.get("sha", "")
         repository = payload.get("repository", "")
 
-        append_line(
-            DEPLOY_LOG,
-            f"{utc_now()} | trigger received | repo={repository} ref={ref} sha={sha}",
-        )
+        deploy_lines: list[str] = []
+        trigger_line = f"{utc_now()} | trigger received | repo={repository} ref={ref} sha={sha}"
+        deploy_lines.append(trigger_line)
+        append_line(DEPLOY_LOG, trigger_line)
 
         code, detail = run_docker_build()
+        build_excerpt = detail
         if code != 0:
-            append_line(DEPLOY_LOG, f"{utc_now()} | docker build failed | exit={code}")
+            result_line = f"{utc_now()} | docker build failed | exit={code}"
+            deploy_lines.append(result_line)
+            append_line(DEPLOY_LOG, result_line)
+            try:
+                send_deploy_notification(
+                    success=False,
+                    repository=repository,
+                    ref=ref,
+                    sha=sha,
+                    deploy_lines=deploy_lines,
+                    build_excerpt=build_excerpt,
+                )
+            except Exception as exc:
+                print(f"email notification failed: {exc}", file=sys.stderr)
             self._send_json(500, {"ok": False, "error": "docker build failed", "detail": detail[-2000:]})
             return
 
-        append_line(DEPLOY_LOG, f"{utc_now()} | docker build ok | image={IMAGE_TAG}")
+        result_line = f"{utc_now()} | docker build ok | image={IMAGE_TAG}"
+        deploy_lines.append(result_line)
+        append_line(DEPLOY_LOG, result_line)
+        try:
+            send_deploy_notification(
+                success=True,
+                repository=repository,
+                ref=ref,
+                sha=sha,
+                deploy_lines=deploy_lines,
+                build_excerpt=build_excerpt,
+            )
+        except Exception as exc:
+            print(f"email notification failed: {exc}", file=sys.stderr)
         self._send_json(200, {"ok": True, "built": IMAGE_TAG})
 
 
