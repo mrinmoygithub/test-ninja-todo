@@ -3,5 +3,6 @@ __pycache__/
 .env
 deploy/deploy-webhook.env
 logs/*.log
+sonar-project.properties
 .venv/
 venv/
