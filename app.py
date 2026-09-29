@@ -4,7 +4,7 @@ from flask import Flask, send_from_directory
 
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
-APP_VERSION = "1.2.2"
+APP_VERSION = "1.2.3"
 
 app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="")
 
