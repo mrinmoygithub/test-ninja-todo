@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.env
+deploy/deploy-webhook.env
+logs/*.log
+.venv/
+venv/

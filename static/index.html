@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo List</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <h1>Todo List</h1>
+        <p class="subtitle">Simple tasks — saved in your browser</p>
+      </header>
+
+      <form id="todo-form" class="todo-form" autocomplete="off">
+        <input
+          id="todo-input"
+          type="text"
+          placeholder="What needs to be done?"
+          maxlength="200"
+          required
+        />
+        <button type="submit">Add</button>
+      </form>
+
+      <ul id="todo-list" class="todo-list" aria-live="polite"></ul>
+
+      <footer class="actions">
+        <span id="todo-count">0 items</span>
+        <button type="button" id="clear-completed" class="link-btn">
+          Clear completed
+        </button>
+      </footer>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+[Unit]
+Description=Todo app deploy webhook (CI callback + Docker build)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/test_ninja
+EnvironmentFile=/etc/todo-deploy/webhook.env
+ExecStart=/usr/bin/python3 /root/test_ninja/deploy/webhook.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
