@@ -11,7 +11,14 @@
       <header>
         <h1>Todo List</h1>
         <p class="subtitle">Simple tasks — saved in your browser</p>
+        <p id="build-info" class="build-info" aria-live="polite"></p>
       </header>
+
+      <div class="filters" role="tablist" aria-label="Filter todos">
+        <button type="button" class="filter-btn active" data-filter="all">All</button>
+        <button type="button" class="filter-btn" data-filter="active">Active</button>
+        <button type="button" class="filter-btn" data-filter="done">Done</button>
+      </div>
 
       <form id="todo-form" class="todo-form" autocomplete="off">
         <input

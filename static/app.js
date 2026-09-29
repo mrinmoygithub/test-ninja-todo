@@ -8,6 +8,30 @@ const input = document.getElementById("todo-input");
 const list = document.getElementById("todo-list");
 const countEl = document.getElementById("todo-count");
 const clearBtn = document.getElementById("clear-completed");
+const buildInfo = document.getElementById("build-info");
+const filterButtons = document.querySelectorAll(".filter-btn");
+
+/** @type {"all" | "active" | "done"} */
+let filter = "all";
+
+filterButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    filter = btn.dataset.filter;
+    filterButtons.forEach((b) => b.classList.toggle("active", b === btn));
+    render();
+  });
+});
+
+fetch("/health")
+  .then((r) => r.json())
+  .then((data) => {
+    if (data.version) {
+      buildInfo.textContent = `Live app version ${data.version} (from deploy callback)`;
+    }
+  })
+  .catch(() => {
+    buildInfo.textContent = "";
+  });
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -37,15 +61,27 @@ function saveAndRender() {
   render();
 }
 
+function visibleTodos() {
+  if (filter === "active") return todos.filter((t) => !t.done);
+  if (filter === "done") return todos.filter((t) => t.done);
+  return todos;
+}
+
 function render() {
   list.innerHTML = "";
+  const shown = visibleTodos();
   if (todos.length === 0) {
     const li = document.createElement("li");
     li.className = "empty";
     li.textContent = "No todos yet — add one above.";
     list.appendChild(li);
+  } else if (shown.length === 0) {
+    const li = document.createElement("li");
+    li.className = "empty";
+    li.textContent = "Nothing in this filter — try another tab.";
+    list.appendChild(li);
   } else {
-    for (const todo of todos) {
+    for (const todo of shown) {
       list.appendChild(createItem(todo));
     }
   }
