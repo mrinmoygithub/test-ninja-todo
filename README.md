@@ -1,5 +1,7 @@
 # Todo List + self-hosted CI/CD
 
+Repository: [github.com/mrinmoygithub/test-ninja-todo](https://github.com/mrinmoygithub/test-ninja-todo)
+
 Single-page todo app (HTML, CSS, JavaScript) served by a small Python Flask app. Pushes to `master` run a GitHub Actions workflow on a **self-hosted runner** on this machine; the workflow calls a local deploy webhook that logs the event and rebuilds the Docker image.
 
 ## Run locally (without Docker)
