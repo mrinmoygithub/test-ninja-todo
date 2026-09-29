@@ -78,7 +78,9 @@ Logs:
 3. Add repository secret **Settings → Secrets and variables → Actions**:
 
    - Name: `DEPLOY_WEBHOOK_SECRET`
-   - Value: same as `DEPLOY_WEBHOOK_SECRET` in `/etc/todo-deploy/webhook.env`
+   - Value: run `sudo deploy/setup-github-secret.sh` on this server (reads `/etc/todo-deploy/webhook.env`)
+
+4. Ensure this server can push via SSH (`ssh -T git@github.com` should greet your username). If you only added a key on another machine, copy that private key here or generate a new key and add the public key to GitHub.
 
 ## Self-hosted GitHub Actions runner
 
